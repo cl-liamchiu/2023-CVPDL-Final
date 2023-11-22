@@ -1,0 +1,14 @@
+# numpy>=1.21.5
+# tensorflow==2.9.3
+# matplotlib==3.2.2
+# jax==0.4.13
+# flax==0.5.3
+# jaxlib==0.4.13
+
+numpy>=1.21.5
+tensorflow
+matplotlib==3.2.2
+flax==0.5.3
+ftfy
+regex
+tqdm
