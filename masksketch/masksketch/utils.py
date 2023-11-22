@@ -48,6 +48,13 @@ def read_image_from_url(url, height=None, width=None):
     pil_image = pil_image.resize((width, height), Image.BICUBIC)
   return np.float32(pil_image) / 255.
 
+def read_image_from_path(path, height=None, width=None):
+  pil_image = Image.open(path).convert('RGB')
+  img_width, img_height = pil_image.size
+  if height is not None and width is not None:
+    pil_image = pil_image.resize((width, height), Image.BICUBIC)
+  return np.float32(pil_image) / 255.
+
 def restore_from_path(path):
   with tf.io.gfile.GFile(path, "rb") as f:
     state = flax.serialization.from_bytes(None, f.read())

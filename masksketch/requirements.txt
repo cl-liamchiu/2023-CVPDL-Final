@@ -5,6 +5,7 @@
 # flax==0.5.3
 # jaxlib==0.4.13
 
+ml_collections
 numpy>=1.21.5
 tensorflow
 matplotlib==3.2.2
