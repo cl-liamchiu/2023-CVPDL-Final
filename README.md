@@ -11,3 +11,12 @@ pip install jax[cuda12_pip]==0.4.13 -f https://storage.googleapis.com/jax-releas
 ```
 ## MaskSketch
 MaskSketch is a structure-conditional image generation model based on [MaskGIT](https://github.com/google-research/maskgit). Our method leverages the structure-preserving properties of the self-attention maps of MaskGIT to generate realistic images that follow the structure given an input image or sketch. 
+
+https://github.com/google-research/masksketch
+
+
+## CLIPStyler
+https://github.com/cyclomon/CLIPstyler
+
+## InST (Inversion-Based Style Transfer with Diffusion Models)
+https://github.com/zyxElsa/InST
