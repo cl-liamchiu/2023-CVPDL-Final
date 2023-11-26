@@ -89,7 +89,7 @@ class MaskSketch_generator(ImageNet_class_conditional_generator):
       config = masksketch_class_cond_config.get_config()
     self.maskgit_cf = config
     self.maskgit_cf.image_size = int(image_size)
-    self.maskgit_cf.eval_batch_size = 8
+    self.maskgit_cf.eval_batch_size = 2
 
   def image_to_tokens(self, rng, image, label, mask_rate=0.):
     imgs = self._create_input_batch(image)
