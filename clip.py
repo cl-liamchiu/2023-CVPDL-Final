@@ -61,7 +61,6 @@ class FlatFolderDataset(data.Dataset):
 
 def fast_clip(img, text_cond="anime", output_path=None):
     source = "a Photo"
-    text_cond = "anime" #@param {type: "string"}
     # "acrylic", "desert_sand", "inkwash_painting", "oil_bluered_brush",
     # "sketch_blackpencil", "stonewall", "water_purple_brush", "anime",
     # "blue_wool", "cyberpunk", "mondrian", "papyrus"

@@ -13,6 +13,7 @@ from category import category_list
 
 
 from clip import fast_clip
+# from inst import inst
 
 # 1. step 1: upload sketch image and select category
 # 2. step 2: use masksketch to generate image and save to temp file path
@@ -33,9 +34,9 @@ for (type_, resolution) in models_to_download:
 # 1. step 1: upload sketch image and select category
 st.title("Sketch to Stylish Image")
 st.write("Upload a sketch and select a category to generate an image")
+cat = st.selectbox("Select a category", category_list)
 uploaded_file = st.file_uploader("Choose a file", type=["png", "jpg", "jpeg"])
 
-cat = st.selectbox("Select a category", category_list)
 print("selected category: ", cat)
 print("uploaded file: ", uploaded_file)
 
@@ -65,6 +66,11 @@ def generate_image(image, cat_index):
     # convert to uint8
     arr = arr.astype(np.uint8)
     im = Image.fromarray(arr)
+    
+    # save image to outputs folder
+    os.makedirs("outputs", exist_ok=True)
+    file_len = len(os.listdir("outputs"))
+    im.save(f"outputs/sketch_{file_len}.jpg")
     return im
 
 if ((uploaded_file is not None) and (cat is not None)):
@@ -79,15 +85,19 @@ if ((uploaded_file is not None) and (cat is not None)):
     # 2. step 2: use masksketch to generate image and save to temp file path
     # 3. step 3: use clipstyler to generate image and save as output.jpg
 
-print("sketch result: ", sketch_result)
-print("shape: ", np.array(sketch_result).shape) # (256,256,3)
+    print("sketch result: ", sketch_result)
+    print("shape: ", np.array(sketch_result).shape) # (256,256,3)
 
-# upsampling to 512x512
-sketch_result_t = sketch_result.resize((512, 512))
+    # upsampling to 512x512
+    sketch_result_t = sketch_result.resize((512, 512))
+else:
+    sketch_result = None
+    sketch_result_t = None
 
 @st.cache_data
 def generate_clip_image(style, image):
-    img = fast_clip(image, text_cond=style, output_path="./output.jpg")
+    file_len = len(os.listdir("outputs"))
+    img = fast_clip(image, text_cond=style, output_path=f"outputs/clip_{file_len}.jpg")
     img = img * 255.0
     arr = np.round(np.array(img))
     # if values are outside [0, 255], clip them
@@ -98,21 +108,52 @@ def generate_clip_image(style, image):
     # transform from (3,512,512) to (512,512,3)
     arr = np.transpose(arr, (1,2,0))
     im = Image.fromarray(arr, mode="RGB")
+
     # resize to 256x256
     im = im.resize((256, 256))
     return im
 
-style_list = ["acrylic", "desert_sand", "inkwash_painting", "oil_bluered_brush",
-    "sketch_blackpencil", "stonewall", "water_purple_brush", "anime",
-    "blue_wool", "cyberpunk", "mondrian", "papyrus"]
+# @st.cache_data
+# def generate_inst_image(style, image):
+#     # style: woman, modern, longhair, andre-derain
+#     input_image = '101_input.jpg'
+#     style_image = f'image_style_transfer/styles/{style}.jpg'
 
-style = st.selectbox("Select a style", style_list)
-if ((sketch_result_t is not None) and (style is not None)):
-    # print("sketch result: ", sketch_result_t)
-    clip_result = generate_clip_image(style, sketch_result_t)
-    print("sketch result: ", sketch_result_t)
-    print("clip result: ", clip_result)
-    st.image([sketch_result, np.array(clip_result) ], caption=['Original Image', "Generated Image"], use_column_width="auto")
+#     inst(prompt = 'a high building next to the hill', \
+#      content_dir = f'{input_image}', \
+#      style_dir = f'{style_image}', \
+#      ddim_steps = 70, \
+#      strength = 0.7, \
+#      seed=42, \
+#      style=style)
+    
+tab1, tab2 = st.tabs(["ClipStyler", "Inst"])
+
+with tab1:
+    clip_style_list = ["acrylic", "desert_sand", "inkwash_painting", "oil_bluered_brush",
+        "sketch_blackpencil", "stonewall", "water_purple_brush", "anime",
+        "blue_wool", "cyberpunk", "mondrian", "papyrus"]
+
+    style = st.selectbox("Select a style", clip_style_list)
+    if ((sketch_result_t is not None) and (style is not None)):
+        # print("sketch result: ", sketch_result_t)
+        clip_result = generate_clip_image(style, sketch_result_t)
+        print("sketch result: ", sketch_result_t)
+        print("clip result: ", clip_result)
+        st.image([sketch_result, np.array(clip_result) ], caption=['Original Image', "Generated Image"], use_column_width="auto")
+
+with tab2:
+    st.write("Inst")
+    prompt = st.text_input("Prompt", "")
+
+    inst_style_list = ["woman", "modern", "longhair", "andre-derain"]
+
+    style = st.selectbox("Select a style", inst_style_list)
+    if ((sketch_result_t is not None) and (style is not None)):
+        if prompt is None or prompt == "":
+            prompt = "*"
+        # inst_result = generate_inst_image(style, sketch_result_t)
+        # st.image([sketch_result, np.array(inst_result) ], caption=['Original Image', "Generated Image"], use_column_width="auto")
 
 # a button to clear results
 if st.button("Clear Results"):
