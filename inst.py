@@ -66,12 +66,13 @@ def load_img(path):
 config="image_style_transfer/v1-inference.yaml"
 ckpt="image_style_transfer/sd-v1-4.ckpt"
 config = OmegaConf.load(f"{config}")
-model = load_model_from_config(config, f"{ckpt}")
-sampler = DDIMSampler(model)
 
 def inst(prompt = '', content_dir = '', style_dir='',ddim_steps = 50,strength = 0.5, style = None, seed=42):
     if style is None:
         return
+
+    model = load_model_from_config(config, f"{ckpt}")
+    sampler = DDIMSampler(model)
     model.embedding_manager.load(f'image_style_transfer/styles/{style}_embeddings.pt')
     model = model.to(device)
 
@@ -97,7 +98,7 @@ def inst(prompt = '', content_dir = '', style_dir='',ddim_steps = 50,strength = 
 
 
     sample_path = os.path.join(outpath, "samples")
-    os.makedirs(sample_path, exist_ok=True)
+    # os.makedirs(sample_path, exist_ok=True)
     base_count = len(os.listdir(sample_path))
     grid_count = len(os.listdir(outpath)) + 10
     
@@ -105,7 +106,6 @@ def inst(prompt = '', content_dir = '', style_dir='',ddim_steps = 50,strength = 
     style_image = repeat(style_image, '1 ... -> b ...', b=batch_size)
     style_latent = model.get_first_stage_encoding(model.encode_first_stage(style_image))  # move to latent space
 
-    content_name =  content_dir.split('/')[-1].split('.')[0]
     content_image = load_img(content_dir).to(device)
     content_image = repeat(content_image, '1 ... -> b ...', b=batch_size)
     content_latent = model.get_first_stage_encoding(model.encode_first_stage(content_image))  # move to latent space
@@ -175,7 +175,7 @@ def inst(prompt = '', content_dir = '', style_dir='',ddim_steps = 50,strength = 
                 # to image
                 grid = 255. * rearrange(grid, 'c h w -> h w c').cpu().numpy()
                 output = Image.fromarray(grid.astype(np.uint8))
-                output.save(os.path.join(outpath, content_name+'-'+prompt+f'-{grid_count:04}.png'))
+                output.save(os.path.join(outpath, prompt+f'-{grid_count:04}.png'))
                 # Image.fromarray(grid.astype(np.uint8)).save(os.path.join(outpath, f'grid-{grid_count:04}.png'))
                 grid_count += 1
 
@@ -183,13 +183,18 @@ def inst(prompt = '', content_dir = '', style_dir='',ddim_steps = 50,strength = 
 
 if __name__ == "__main__":
     style = 'andre-derain' # woman, modern, longhair, andre-derain
-    input_image = '101_input.jpg'
+    input_image = 'outputs/sketch_8.jpg'
     style_image = f'image_style_transfer/styles/{style}.jpg'
 
-    inst(prompt = 'a high building next to the hill', \
+    output = inst(prompt = 'a turtle on the grass', \
      content_dir = f'{input_image}', \
      style_dir = f'{style_image}', \
      ddim_steps = 70, \
      strength = 0.7, \
      seed=42, \
      style = style)
+    
+    # save image to outputs folder
+    os.makedirs("outputs", exist_ok=True)
+    file_len = len(os.listdir("outputs"))
+    output.save(f"outputs/inst_{file_len}.jpg")
