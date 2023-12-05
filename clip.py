@@ -1,6 +1,5 @@
 from argparse import Namespace
 
-import matplotlib.pyplot as plt 
 import sys, os
 sys.path.append(os.getcwd() + '/CLIPstyler')
 
@@ -60,7 +59,6 @@ class FlatFolderDataset(data.Dataset):
 
 
 def fast_clip(img, text_cond="anime", output_path=None):
-    source = "a Photo"
     # "acrylic", "desert_sand", "inkwash_painting", "oil_bluered_brush",
     # "sketch_blackpencil", "stonewall", "water_purple_brush", "anime",
     # "blue_wool", "cyberpunk", "mondrian", "papyrus"
@@ -144,11 +142,11 @@ def fast_clip(img, text_cond="anime", output_path=None):
 
 
 if __name__ == "__main__":
-    image_path = "./output.jpg"
+    image_path = "./outputs/sketch_8.jpg"
     img = Image.open(image_path).convert('RGB')
     print("image shape: ", np.array(img).shape)
-    output_path = "./clip_output.png"
-    fast_clip(img, text_cond="oil_bluered_brush", output_path=output_path)
+    output_path = "./outputs/clip_0.png"
+    fast_clip(img, text_cond="anime", output_path=output_path)
     # "acrylic", "desert_sand", "inkwash_painting", "oil_bluered_brush",
     # "sketch_blackpencil", "stonewall", "water_purple_brush", "anime",
     # "blue_wool", "cyberpunk", "mondrian", "papyrus"
