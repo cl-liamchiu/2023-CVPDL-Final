@@ -71,14 +71,15 @@ def generate_image(image, cat_index):
     os.makedirs("outputs", exist_ok=True)
     file_len = len(os.listdir("outputs"))
     im.save(f"outputs/sketch_{file_len}.jpg")
-    return im
+    return im, f"outputs/sketch_{file_len}.jpg"
 
+output_path = None
 if ((uploaded_file is not None) and (cat is not None)):
     image = read_image_from_path(
         uploaded_file,
         height=256,
         width=256)
-    sketch_result = generate_image(image, cat_index)
+    sketch_result, output_path = generate_image(image, cat_index)
 
     st.image([image, sketch_result], caption=['Uploaded Image', "Generated Image"], use_column_width="auto")
 
@@ -114,13 +115,13 @@ def generate_clip_image(style, image):
     return im
 
 # @st.cache_data
-# def generate_inst_image(style, image):
+# def generate_inst_image(style, image_path, prompt):
 #     # style: woman, modern, longhair, andre-derain
-#     input_image = '101_input.jpg'
 #     style_image = f'image_style_transfer/styles/{style}.jpg'
+#     print("style image: ", style_image)
 
-#     inst(prompt = 'a high building next to the hill', \
-#      content_dir = f'{input_image}', \
+#     return inst(prompt = prompt, \
+#      content_dir = image_path, \
 #      style_dir = f'{style_image}', \
 #      ddim_steps = 70, \
 #      strength = 0.7, \
@@ -130,12 +131,15 @@ def generate_clip_image(style, image):
 tab1, tab2 = st.tabs(["ClipStyler", "Inst"])
 
 with tab1:
-    clip_style_list = ["acrylic", "desert_sand", "inkwash_painting", "oil_bluered_brush",
+    clip_style_list = ["None", "acrylic", "desert_sand", "inkwash_painting", "oil_bluered_brush",
         "sketch_blackpencil", "stonewall", "water_purple_brush", "anime",
-        "blue_wool", "cyberpunk", "mondrian", "papyrus"]
+        "blue_wool", "cyberpunk", "mondrian", "papyrus", "Custom"]
 
     style = st.selectbox("Select a style", clip_style_list)
-    if ((sketch_result_t is not None) and (style is not None)):
+    if style == "Custom":
+        style = st.text_input("Custom Style", "anime")
+        style = "sketch_blackpencil"
+    if ((sketch_result_t is not None) and (style is not None) and(style != "None")):
         # print("sketch result: ", sketch_result_t)
         clip_result = generate_clip_image(style, sketch_result_t)
         print("sketch result: ", sketch_result_t)
@@ -144,16 +148,16 @@ with tab1:
 
 with tab2:
     st.write("Inst")
-    prompt = st.text_input("Prompt", "")
-
-    inst_style_list = ["woman", "modern", "longhair", "andre-derain"]
+    inst_style_list = ["Default", "modern", "longhair", "andre-derain", "woman"]
 
     style = st.selectbox("Select a style", inst_style_list)
-    if ((sketch_result_t is not None) and (style is not None)):
-        if prompt is None or prompt == "":
-            prompt = "*"
-        # inst_result = generate_inst_image(style, sketch_result_t)
-        # st.image([sketch_result, np.array(inst_result) ], caption=['Original Image', "Generated Image"], use_column_width="auto")
+    if style == "Default":
+        style = None
+    # if ((output_path is not None) and (style is not None)):
+    #     prompt = "*"
+    #     print("output path: ", output_path)
+    #     inst_result = generate_inst_image(style, output_path, prompt)
+    #     st.image([np.array(inst_result)], caption=["Generated Image"], use_column_width="auto")
 
 # a button to clear results
 if st.button("Clear Results"):
