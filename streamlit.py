@@ -6,7 +6,7 @@ import jax
 import os
 import itertools
 
-from masksketch.utils import visualize_images, read_image_from_path, restore_from_path, draw_image_with_bbox, Bbox
+from masksketch.utils import read_image_from_path
 from masksketch.sketch_conditional_inference import MaskSketch_generator
 from masksketch.configs import masksketch_class_cond_config
 from category import category_list
@@ -86,7 +86,6 @@ if ((uploaded_file is not None) and (cat is not None)):
     # 2. step 2: use masksketch to generate image and save to temp file path
     # 3. step 3: use clipstyler to generate image and save as output.jpg
 
-    print("sketch result: ", sketch_result)
     print("shape: ", np.array(sketch_result).shape) # (256,256,3)
 
     # upsampling to 512x512
@@ -132,13 +131,16 @@ tab1, tab2 = st.tabs(["ClipStyler", "Inst"])
 
 with tab1:
     clip_style_list = ["None", "acrylic", "desert_sand", "inkwash_painting", "oil_bluered_brush",
-        "sketch_blackpencil", "stonewall", "water_purple_brush", "anime",
+        "stonewall", "water_purple_brush", "anime",
         "blue_wool", "cyberpunk", "mondrian", "papyrus", "Custom"]
 
     style = st.selectbox("Select a style", clip_style_list)
     if style == "Custom":
-        style = st.text_input("Custom Style", "anime")
-        style = "sketch_blackpencil"
+        style = st.text_input("Custom Style", "")
+        if style != "":
+            style = "sketch_blackpencil"
+        else:
+            style = None
     if ((sketch_result_t is not None) and (style is not None) and(style != "None")):
         # print("sketch result: ", sketch_result_t)
         clip_result = generate_clip_image(style, sketch_result_t)
@@ -147,7 +149,6 @@ with tab1:
         st.image([sketch_result, np.array(clip_result) ], caption=['Original Image', "Generated Image"], use_column_width="auto")
 
 with tab2:
-    st.write("Inst")
     inst_style_list = ["Default", "modern", "longhair", "andre-derain", "woman"]
 
     style = st.selectbox("Select a style", inst_style_list)
@@ -159,7 +160,3 @@ with tab2:
     #     inst_result = generate_inst_image(style, output_path, prompt)
     #     st.image([np.array(inst_result)], caption=["Generated Image"], use_column_width="auto")
 
-# a button to clear results
-if st.button("Clear Results"):
-    sketch_result = None
-    uploaded_file = None
