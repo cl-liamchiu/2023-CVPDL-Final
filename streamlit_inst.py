@@ -29,7 +29,7 @@ print("uploaded file: ", uploaded_file)
 # get select category index
 cat_index = category_list.index(cat)
 
-output_path = "outputs/sketch_8.jpg"
+output_path = "outputs/sketch_43.jpg"
 if ((uploaded_file is not None) and (cat is not None)):
     image = read_image_from_path(
         uploaded_file,
@@ -91,6 +91,11 @@ with tab2:
         prompt = "*"
         print("output path: ", output_path)
         inst_result = generate_inst_image(style, output_path, prompt)
-        st.image([np.array(inst_result)], caption=["Generated Image"], use_column_width="auto")
+        inst_result = inst_result.resize((256, 256))
+        sketch_result = read_image_from_path(
+            output_path,
+            height=256,
+            width=256)
+        st.image([sketch_result, inst_result], caption=["Original Image", "Generated Image"], use_column_width="auto")
 
 
