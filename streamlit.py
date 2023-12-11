@@ -32,7 +32,7 @@ for (type_, resolution) in models_to_download:
         os.system(f"wget {source_url} -O {canonical_path}")
 
 # 1. step 1: upload sketch image and select category
-st.title("Sketch to Stylish Image")
+st.title("Sketch to Style Image")
 st.write("Upload a sketch and select a category to generate an image")
 cat = st.selectbox("Select a category", category_list)
 uploaded_file = st.file_uploader("Choose a file", type=["png", "jpg", "jpeg"])
@@ -40,9 +40,15 @@ uploaded_file = st.file_uploader("Choose a file", type=["png", "jpg", "jpeg"])
 print("selected category: ", cat)
 print("uploaded file: ", uploaded_file)
 
-
 # get select category index
 cat_index = category_list.index(cat)
+
+if (uploaded_file is not None):
+    image = read_image_from_path(
+        uploaded_file,
+        height=256,
+        width=256)
+    st.image([image], caption=['Uploaded Image'], use_column_width="auto")
 
 
 @st.cache_data
@@ -73,31 +79,10 @@ def generate_image(image, cat_index):
     im.save(f"outputs/sketch_{file_len}.jpg")
     return im, f"outputs/sketch_{file_len}.jpg"
 
-output_path = None
-if ((uploaded_file is not None) and (cat is not None)):
-    image = read_image_from_path(
-        uploaded_file,
-        height=256,
-        width=256)
-    sketch_result, output_path = generate_image(image, cat_index)
-
-    st.image([image, sketch_result], caption=['Uploaded Image', "Generated Image"], use_column_width="auto")
-
-    # 2. step 2: use masksketch to generate image and save to temp file path
-    # 3. step 3: use clipstyler to generate image and save as output.jpg
-
-    print("shape: ", np.array(sketch_result).shape) # (256,256,3)
-
-    # upsampling to 512x512
-    sketch_result_t = sketch_result.resize((512, 512))
-else:
-    sketch_result = None
-    sketch_result_t = None
-
 @st.cache_data
 def generate_clip_image(style, image):
     file_len = len(os.listdir("outputs"))
-    img = fast_clip(image, text_cond=style, output_path=f"outputs/clip_{file_len}.jpg")
+    img = fast_clip(image, text_cond=style, output_path=f"outputs/clip_{style}_{file_len}.jpg")
     img = img * 255.0
     arr = np.round(np.array(img))
     # if values are outside [0, 255], clip them
@@ -126,8 +111,9 @@ def generate_clip_image(style, image):
 #      strength = 0.7, \
 #      seed=42, \
 #      style=style)
-    
-tab1, tab2 = st.tabs(["ClipStyler", "Inst"])
+
+
+tab1, tab2 = st.tabs(["CLIPstyler", "InST"])
 
 with tab1:
     clip_style_list = ["None", "acrylic", "desert_sand", "inkwash_painting", "oil_bluered_brush",
@@ -141,22 +127,37 @@ with tab1:
             style = "sketch_blackpencil"
         else:
             style = None
-    if ((sketch_result_t is not None) and (style is not None) and(style != "None")):
-        # print("sketch result: ", sketch_result_t)
-        clip_result = generate_clip_image(style, sketch_result_t)
-        print("sketch result: ", sketch_result_t)
-        print("clip result: ", clip_result)
-        st.image([sketch_result, np.array(clip_result) ], caption=['Original Image', "Generated Image"], use_column_width="auto")
 
 with tab2:
     inst_style_list = ["Default", "modern", "longhair", "andre-derain", "woman"]
 
-    style = st.selectbox("Select a style", inst_style_list)
-    if style == "Default":
-        style = None
-    # if ((output_path is not None) and (style is not None)):
+    inst_style = st.selectbox("Select a style", inst_style_list)
+    if inst_style == "Default":
+        inst_style = None
+    # if ((output_path is not None) and (inst_style is not None)):
     #     prompt = "*"
     #     print("output path: ", output_path)
-    #     inst_result = generate_inst_image(style, output_path, prompt)
-    #     st.image([np.array(inst_result)], caption=["Generated Image"], use_column_width="auto")
+    #     inst_result = generate_inst_image(inst_style, output_path, prompt)
+    #     st.image([np.array(inst_result)], caption=["Generated Image"], use_column_width="auto
 
+
+if st.button('Generate Image'):
+    output_path = None
+    if ((uploaded_file is not None) and (cat is not None)):
+        sketch_result, output_path = generate_image(image, cat_index)
+
+        print("shape: ", np.array(sketch_result).shape) # (256,256,3)
+
+        # upsampling to 512x512
+        sketch_result_t = sketch_result.resize((512, 512))
+    else:
+        sketch_result = None
+        sketch_result_t = None
+
+
+    if ((sketch_result_t is not None) and (style is not None) and (style != "None")):
+        # print("sketch result: ", sketch_result_t)
+        clip_result = generate_clip_image(style, sketch_result_t)
+        print("sketch result: ", sketch_result_t)
+        print("clip result: ", clip_result)
+        st.image([sketch_result, np.array(clip_result) ], caption=['Sketch to Image', "Style Image"], use_column_width="auto")
