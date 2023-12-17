@@ -12,14 +12,30 @@ pip install jax[cuda12_pip]==0.4.13 -f https://storage.googleapis.com/jax-releas
 
 ## MaskSketch
 
-MaskSketch is a structure-conditional image generation model based on [MaskGIT](https://github.com/google-research/maskgit). Our method leverages the structure-preserving properties of the self-attention maps of MaskGIT to generate realistic images that follow the structure given an input image or sketch.
+[MaskSketch](https://github.com/google-research/masksketch) is a structure-conditional image generation model based on [MaskGIT](https://github.com/google-research/maskgit). Our method leverages the structure-preserving properties of the self-attention maps of MaskGIT to generate realistic images that follow the structure given an input image or sketch.
 
-https://github.com/google-research/masksketch
+```sh
+python sketch_to_image.py [--show_category SHOW_CATEGORY] [--category_number CATEGORY_NUMBER] input_path output_path
+# example
+python sketch_to_image.py --category_number=35 ./imgs/turtle_2.jpg test.jpg
+```
 
 ## CLIPstyler
 
-https://github.com/cyclomon/CLIPstyler
+### Fast Style Transfer
+
+```sh
+python clip_style_fast_style_transfer.py --style STYLE input_path output_path
+#example
+python clip_style_fast_style_transfer.py --style="anime" ./test.jpg ./test_clip_fast.jpg
+```
 
 ## InST (Inversion-Based Style Transfer with Diffusion Models)
 
-https://github.com/zyxElsa/InST
+### Single Style Transfer
+
+```sh
+python inst_single_style_transfer.py --style STYLE input_path output_path
+# example
+python inst_single_style_transfer.py --style="modern" ./test.jpg ./test_inst_single.jpg
+```
