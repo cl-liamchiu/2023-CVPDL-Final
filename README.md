@@ -1,5 +1,14 @@
 # 2023-CVPDL-Final
 
+## Environments
+
+- OS: Ubuntu 18.04
+- Python Version: 3.8
+- GPU: NVIDIA RTX A6000
+- GPU RAM: 48 GB
+- Cuda Version: 11.3
+- PyTorch Version: 1.7.1
+
 ## Installation
 
 ```sh
@@ -8,6 +17,27 @@ conda activate cvpdl-final
 conda install --yes -c pytorch pytorch=1.7.1 torchvision=0.8.2 cudatoolkit=11.0
 pip install -r requirements.txt
 pip install jax[cuda12_pip]==0.4.13 -f https://storage.googleapis.com/jax-releases/jax_cuda_releases.html
+```
+
+### Download model of InST
+
+```sh
+cd image_style_transfer
+bash download.sh
+```
+
+### Download model of CLIPstyler
+
+- Download DIV2K dataset [LINK](https://data.vision.ee.ethz.ch/cvl/DIV2K/).
+
+- To train the model, please download the pre-trained vgg encoder & decoder models in [LINK](https://drive.google.com/drive/folders/17UDzXtp9IZlerFjGly3QEm2uU3yi7siO?usp=sharing).
+
+- Please save the downloaded models in `./models` directory
+
+## Run Streamlit
+
+```sh
+streamlit run streamlit.py
 ```
 
 ## MaskSketch

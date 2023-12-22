@@ -17,7 +17,7 @@ os.makedirs("checkpoints", exist_ok=True)
 
 
 # 1. step 1: upload sketch image and select category
-st.title("Sketch to Style Image")
+st.title("Sketch to Captivating Image")
 st.write("Upload a sketch and select a category to generate an image")
 cat = st.selectbox("Select a category", category_list)
 uploaded_file = st.file_uploader("Choose a file", type=["png", "jpg", "jpeg"])

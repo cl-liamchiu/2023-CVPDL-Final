@@ -13,7 +13,7 @@ from category import category_list
 
 
 from clip import fast_clip
-# from inst import inst
+from inst import inst
 
 # 1. step 1: upload sketch image and select category
 # 2. step 2: use masksketch to generate image and save to temp file path
@@ -32,7 +32,7 @@ for (type_, resolution) in models_to_download:
         os.system(f"wget {source_url} -O {canonical_path}")
 
 # 1. step 1: upload sketch image and select category
-st.title("Sketch to Style Image")
+st.title("Sketch to Captivating Image")
 st.write("Upload a sketch and select a category to generate an image")
 cat = st.selectbox("Select a category", category_list)
 uploaded_file = st.file_uploader("Choose a file", type=["png", "jpg", "jpeg"])
@@ -98,19 +98,19 @@ def generate_clip_image(style, image):
     im = im.resize((256, 256))
     return im
 
-# @st.cache_data
-# def generate_inst_image(style, image_path, prompt):
-#     # style: woman, modern, longhair, andre-derain
-#     style_image = f'image_style_transfer/styles/{style}.jpg'
-#     print("style image: ", style_image)
+@st.cache_data
+def generate_inst_image(style, image_path, prompt):
+    # style: woman, modern, longhair, andre-derain
+    style_image = f'image_style_transfer/styles/{style}.jpg'
+    print("style image: ", style_image)
 
-#     return inst(prompt = prompt, \
-#      content_dir = image_path, \
-#      style_dir = f'{style_image}', \
-#      ddim_steps = 70, \
-#      strength = 0.7, \
-#      seed=42, \
-#      style=style)
+    return inst(prompt = prompt, \
+     content_dir = image_path, \
+     style_dir = f'{style_image}', \
+     ddim_steps = 70, \
+     strength = 0.7, \
+     seed=42, \
+     style=style)
 
 
 tab1, tab2 = st.tabs(["CLIPstyler", "InST"])
@@ -127,6 +127,7 @@ with tab1:
             style = "sketch_blackpencil"
         else:
             style = None
+    inst_style = None
 
 with tab2:
     inst_style_list = ["Default", "modern", "longhair", "andre-derain", "woman"]
@@ -134,11 +135,15 @@ with tab2:
     inst_style = st.selectbox("Select a style", inst_style_list)
     if inst_style == "Default":
         inst_style = None
-    # if ((output_path is not None) and (inst_style is not None)):
-    #     prompt = "*"
-    #     print("output path: ", output_path)
-    #     inst_result = generate_inst_image(inst_style, output_path, prompt)
-    #     st.image([np.array(inst_result)], caption=["Generated Image"], use_column_width="auto
+    if inst_style is not None:
+        style_image_path =  "image_style_transfer/styles/" + inst_style + ".jpg"
+        style_image = read_image_from_path(
+                style_image_path,
+                height=256,
+                width=256)
+        st.image([style_image], caption=['Reference Image'], use_column_width="auto")
+    
+    style = None
 
 
 if st.button('Generate Image'):
@@ -161,3 +166,14 @@ if st.button('Generate Image'):
         print("sketch result: ", sketch_result_t)
         print("clip result: ", clip_result)
         st.image([sketch_result, np.array(clip_result) ], caption=['Sketch to Image', "Style Image"], use_column_width="auto")
+
+    if ((output_path is not None) and (inst_style is not None)):
+            prompt = "*"
+            print("output path: ", output_path)
+            inst_result = generate_inst_image(inst_style, output_path, prompt)
+            inst_result = inst_result.resize((256, 256))
+            sketch_result = read_image_from_path(
+                output_path,
+                height=256,
+                width=256)
+            st.image([sketch_result, inst_result], caption=["Sketch to image", "Style Image"], use_column_width="auto")
